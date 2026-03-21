@@ -1,0 +1,81 @@
+
+# =============================================================================
+#  FitTrack — Docker Compose
+#  Servicios: mysql · backend · frontend
+#  Variables de entorno: archivo .env en la raíz del proyecto
+# =============================================================================
+
+services:
+
+  # ── Base de datos MySQL ────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: fittrack_mysql
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Se leen de .env: MYSQL_ROOT_PASSWORD, MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - fittrack_net
+
+  # ── Backend Express + Prisma ───────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fittrack_backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      # Sobreescribir solo las que cambian dentro de Docker
+      DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}
+      DB_HOST: mysql
+      NODE_ENV: production
+      FRONTEND_URL: http://192.168.1.108:80
+    ports:
+      - "${PORT:-3001}:3001"
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - fittrack_net
+
+  # ── Frontend React + Nginx ─────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # En Docker el frontend usa el proxy de Nginx; VITE_API_URL vacío
+        VITE_API_URL: ""
+    container_name: fittrack_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - fittrack_net
+
+# ── Red interna ────────────────────────────────────────────────────────────
+networks:
+  fittrack_net:
+    name: fittrack_network
+    driver: bridge

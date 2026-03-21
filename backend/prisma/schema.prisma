@@ -1,0 +1,246 @@
+// Prisma Schema - Fitness App
+// MySQL como motor de base de datos
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+//  ENUMS
+// ─────────────────────────────────────────
+
+enum TipoUsuario {
+  ADMINISTRADOR
+  COACH
+  APODERADO
+  USUARIO
+}
+
+enum TipoPeriodo {
+  SEMANAL
+  MENSUAL
+}
+
+enum GrupoMuscular {
+  PECHO
+  ESPALDA
+  HOMBROS
+  BICEPS
+  TRICEPS
+  ABDOMEN
+  GLUTEOS
+  CUADRICEPS
+  ISQUIOTIBIALES
+  PANTORRILLAS
+  CUERPO_COMPLETO
+  OTRO
+}
+
+// ─────────────────────────────────────────
+//  USUARIO
+// ─────────────────────────────────────────
+
+model Usuario {
+  id               Int         @id @default(autoincrement())
+  correo           String      @unique @db.VarChar(255)
+  nombre           String?     @db.VarChar(100)
+  apellido         String?     @db.VarChar(100)
+  rut              String?     @unique @db.VarChar(12) // Ej: 12345678-9
+  telefonoContacto String?     @db.VarChar(20)
+  tipoUsuario      TipoUsuario @default(USUARIO)
+  passwordHash     String      @db.VarChar(255)
+  passwordTemporal Boolean     @default(false) // true = debe cambiar contraseña
+  perfilCompleto   Boolean     @default(false) // true = nombre, apellido, rut y teléfono completos
+  lesiones         String?     @db.Text // Lesiones o malformaciones físicas
+  activo           Boolean     @default(true)
+  intentosFallidos Int         @default(0)
+  ultimaConexion   DateTime?
+  creadoEn         DateTime    @default(now())
+  actualizadoEn    DateTime    @updatedAt
+
+  // Relaciones como COACH
+  usuariosAsignados CoachUsuario[] @relation("CoachRelacion")
+
+  // Relaciones como USUARIO (coach asignado)
+  coachAsignado CoachUsuario? @relation("UsuarioRelacion")
+
+  // Relaciones como APODERADO
+  supervisa ApoderadoUsuario[] @relation("ApoderadoRelacion")
+
+  // Relaciones como USUARIO supervisado
+  apoderados ApoderadoUsuario[] @relation("SupervisadoRelacion")
+
+  // Rutinas asignadas al usuario
+  rutinas Rutina[] @relation("UsuarioRutina")
+
+  // Rutinas creadas por el coach
+  rutinasCreadas Rutina[] @relation("CoachRutina")
+
+  // Progreso registrado
+  progresos ProgresoEjercicioUsuario[]
+
+  @@map("usuarios")
+}
+
+// ─────────────────────────────────────────
+//  LOG DE ERRORES DE LOGIN
+// ─────────────────────────────────────────
+
+model ErrorLoginLog {
+  id        Int      @id @default(autoincrement())
+  correo    String   @db.VarChar(255)   // Correo ingresado (puede no existir)
+  ip        String   @db.VarChar(45)    // IPv4 o IPv6
+  motivo    String   @db.VarChar(100)   // USUARIO_NO_EXISTE | CONTRASENA_INCORRECTA | CUENTA_BLOQUEADA | BLOQUEADO_POR_INTENTOS
+  intentos  Int?                         // Contador de intentos en ese momento (solo para CONTRASENA_INCORRECTA)
+  creadoEn  DateTime @default(now())
+
+  @@index([creadoEn])
+  @@index([correo])
+  @@map("error_login_logs")
+}
+
+// ─────────────────────────────────────────
+//  RELACIÓN COACH → USUARIO
+// ─────────────────────────────────────────
+
+model CoachUsuario {
+  id        Int      @id @default(autoincrement())
+  coachId   Int
+  usuarioId Int      @unique // Un usuario solo puede tener un coach a la vez
+  creadoEn  DateTime @default(now())
+
+  coach   Usuario @relation("CoachRelacion", fields: [coachId], references: [id], onDelete: Cascade)
+  usuario Usuario @relation("UsuarioRelacion", fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("coach_usuarios")
+}
+
+// ─────────────────────────────────────────
+//  RELACIÓN APODERADO → USUARIO(S)
+// ─────────────────────────────────────────
+
+model ApoderadoUsuario {
+  id           Int      @id @default(autoincrement())
+  apoderadoId  Int
+  supervisadoId Int
+  creadoEn     DateTime @default(now())
+
+  apoderado   Usuario @relation("ApoderadoRelacion", fields: [apoderadoId], references: [id], onDelete: Cascade)
+  supervisado Usuario @relation("SupervisadoRelacion", fields: [supervisadoId], references: [id], onDelete: Cascade)
+
+  @@unique([apoderadoId, supervisadoId])
+  @@map("apoderado_usuarios")
+}
+
+// ─────────────────────────────────────────
+//  EJERCICIO
+// ─────────────────────────────────────────
+
+model Ejercicio {
+  id              Int            @id @default(autoincrement())
+  titulo          String         @db.VarChar(200)
+  descripcion     String?        @db.Text
+  videoUrl        String?        @db.VarChar(500) // Ruta local o URL
+  grupoMuscular   GrupoMuscular?
+  activo          Boolean        @default(true)
+  creadoEn        DateTime       @default(now())
+  actualizadoEn   DateTime       @updatedAt
+
+  // Uso en días de rutina
+  rutinaDiaEjercicios RutinaDiaEjercicio[]
+
+  @@map("ejercicios")
+}
+
+// ─────────────────────────────────────────
+//  RUTINA
+// ─────────────────────────────────────────
+
+model Rutina {
+  id           Int         @id @default(autoincrement())
+  usuarioId    Int
+  coachId      Int
+  fechaInicio  DateTime    @db.Date
+  fechaFin     DateTime    @db.Date
+  tipoPeriodo  TipoPeriodo
+  activa       Boolean     @default(true)
+  nota         Float?      // Nota del coach (1.0 - 7.0)
+  creadoEn     DateTime    @default(now())
+  actualizadoEn DateTime   @updatedAt
+
+  usuario Usuario @relation("UsuarioRutina", fields: [usuarioId], references: [id], onDelete: Cascade)
+  coach   Usuario @relation("CoachRutina", fields: [coachId], references: [id])
+
+  // Días de la rutina
+  dias RutinaDia[]
+
+  @@map("rutinas")
+}
+
+// ─────────────────────────────────────────
+//  RUTINA DIA
+// ─────────────────────────────────────────
+
+model RutinaDia {
+  id        Int      @id @default(autoincrement())
+  rutinaId  Int
+  fecha     DateTime @db.Date
+  creadoEn  DateTime @default(now())
+
+  rutina     Rutina               @relation(fields: [rutinaId], references: [id], onDelete: Cascade)
+  ejercicios RutinaDiaEjercicio[]
+
+  @@unique([rutinaId, fecha])
+  @@map("rutina_dias")
+}
+
+// ─────────────────────────────────────────
+//  RUTINA DIA EJERCICIO
+// ─────────────────────────────────────────
+
+model RutinaDiaEjercicio {
+  id                Int     @id @default(autoincrement())
+  rutinaDiaId       Int
+  ejercicioId       Int
+  orden             Int     // 1-5 por día
+  repeticionesObj   Int?    // Repeticiones objetivo
+  tiempoObjetivoSeg Int?    // Tiempo objetivo en segundos
+  comentarioCoach   String? @db.Text
+
+  rutinaDia RutinaDia  @relation(fields: [rutinaDiaId], references: [id], onDelete: Cascade)
+  ejercicio Ejercicio   @relation(fields: [ejercicioId], references: [id])
+
+  // Progreso del usuario
+  progresos ProgresoEjercicioUsuario[]
+
+  @@unique([rutinaDiaId, orden])
+  @@map("rutina_dia_ejercicios")
+}
+
+// ─────────────────────────────────────────
+//  PROGRESO EJERCICIO USUARIO
+// ─────────────────────────────────────────
+
+model ProgresoEjercicioUsuario {
+  id                    Int      @id @default(autoincrement())
+  rutinaDiaEjercicioId  Int
+  usuarioId             Int
+  fecha                 DateTime @db.Date
+  repeticionesRealizadas Int?
+  tiempoRealizadoSeg    Int?     // Tiempo real en segundos
+  completado            Boolean  @default(false)
+  creadoEn              DateTime @default(now())
+  actualizadoEn         DateTime @updatedAt
+
+  rutinaDiaEjercicio RutinaDiaEjercicio @relation(fields: [rutinaDiaEjercicioId], references: [id], onDelete: Cascade)
+  usuario            Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([rutinaDiaEjercicioId, usuarioId])
+  @@map("progreso_ejercicio_usuario")
+}

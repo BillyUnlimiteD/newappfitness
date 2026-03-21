@@ -1,0 +1,67 @@
+# =============================================================================
+#  FitTrack — .gitignore
+# =============================================================================
+
+# ── Entorno y secretos ────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Dependencias ──────────────────────────────────────────────────────────────
+node_modules/
+**/node_modules/
+
+# ── Builds ────────────────────────────────────────────────────────────────────
+dist/
+build/
+**/dist/
+**/build/
+
+# ── Prisma ────────────────────────────────────────────────────────────────────
+# El cliente generado se regenera con `prisma generate`
+backend/node_modules/.prisma/
+
+# ── Uploads (archivos subidos por usuarios) ───────────────────────────────────
+uploads/*
+!uploads/.gitkeep
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── Caché ─────────────────────────────────────────────────────────────────────
+.cache/
+.parcel-cache/
+.vite/
+**/.vite/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+
+# ── IDEs y editores ───────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# ── Datos MySQL y uploads locales ────────────────────────────────────────────
+data/*
+!data/.gitkeep
+
+# ── Misc ──────────────────────────────────────────────────────────────────────
+*.pem
+*.key
+*.cert
