@@ -60,13 +60,13 @@
 /* Fondos por rol */
 .bg-role-usuario   { background-color: #e0f2fe; } /* celeste pastel */
 .bg-role-apoderado { background-color: #fef9c3; } /* amarillo pastel */
-.bg-role-coach     { background-color: #fee2e2; } /* rojo pastel */
+.bg-role-coach     { background-color: #dbeafe; } /* azul pastel */
 .bg-role-admin     { background-color: #dde3ea; } /* gris claro */
 
 /* Sidebar por rol (versión oscura del mismo tono) */
 .sidebar-role-usuario   { background-color: #075985; } /* sky-800 */
 .sidebar-role-apoderado { background-color: #78350f; } /* amber-900 */
-.sidebar-role-coach     { background-color: #991b1b; } /* red-800 */
+.sidebar-role-coach     { background-color: #1e40af; } /* blue-800 */
 .sidebar-role-admin     { background-color: #1e293b; } /* slate-800 */
 
 /* Scrollbar personalizado */
