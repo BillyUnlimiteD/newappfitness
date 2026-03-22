@@ -1,12 +1,22 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { useAuth } from '../../context/AuthContext';
+
+const roleBgClass: Record<string, string> = {
+  USUARIO: 'bg-role-usuario',
+  APODERADO: 'bg-role-apoderado',
+  COACH: 'bg-role-coach',
+  ADMINISTRADOR: 'bg-role-admin',
+};
 
 export default function Layout() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { user } = useAuth();
+  const bgClass = roleBgClass[user?.tipoUsuario ?? ''] ?? 'bg-dark-50';
 
   return (
-    <div className="flex h-screen bg-dark-50 overflow-hidden">
+    <div className={`flex h-screen ${bgClass} overflow-hidden`}>
       <Sidebar isMobileOpen={isMobileOpen} onClose={() => setIsMobileOpen(false)} />
 
       {/* Main */}

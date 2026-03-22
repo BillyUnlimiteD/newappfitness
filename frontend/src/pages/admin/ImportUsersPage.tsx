@@ -112,7 +112,7 @@ export default function ImportUsersPage() {
   };
 
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-dark-900">Importar Usuarios</h1>
         <p className="text-dark-500 mt-0.5">Carga masiva de usuarios desde un archivo Excel</p>

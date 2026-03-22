@@ -71,7 +71,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-dark-900">Mi Perfil</h1>
         <p className="text-dark-500 mt-0.5">Gestiona tu información personal</p>
