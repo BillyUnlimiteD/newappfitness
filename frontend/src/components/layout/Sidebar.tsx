@@ -118,16 +118,24 @@ interface Props {
   onClose: () => void;
 }
 
+const roleSidebarClass: Record<string, string> = {
+  USUARIO: 'sidebar-role-usuario',
+  APODERADO: 'sidebar-role-apoderado',
+  COACH: 'sidebar-role-coach',
+  ADMINISTRADOR: 'sidebar-role-admin',
+};
+
 export default function Sidebar({ isMobileOpen, onClose }: Props) {
   const { user, logout, hasRole } = useAuth();
 
+  const sidebarClass = roleSidebarClass[user?.tipoUsuario ?? ''] ?? 'bg-dark-900';
   const visibleItems = navItems.filter((item) => hasRole(...(item.roles as Parameters<typeof hasRole>)));
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
       isActive
-        ? 'bg-primary-600 text-white shadow-sm'
-        : 'text-dark-300 hover:bg-white/10 hover:text-white'
+        ? 'bg-white/25 text-white shadow-sm'
+        : 'text-white/60 hover:bg-white/10 hover:text-white'
     }`;
 
   return (
@@ -138,7 +146,7 @@ export default function Sidebar({ isMobileOpen, onClose }: Props) {
       )}
 
       <aside className={`
-        fixed top-0 left-0 h-full w-64 bg-dark-900 z-30 flex flex-col
+        fixed top-0 left-0 h-full w-64 ${sidebarClass} z-30 flex flex-col
         transition-transform duration-300
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:z-auto
