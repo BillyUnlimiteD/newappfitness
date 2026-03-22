@@ -61,7 +61,7 @@
 .bg-role-usuario   { background-color: #e0f2fe; } /* celeste pastel */
 .bg-role-apoderado { background-color: #fef9c3; } /* amarillo pastel */
 .bg-role-coach     { background-color: #fee2e2; } /* rojo pastel */
-.bg-role-admin     { background-color: #f1f5f9; } /* gris claro */
+.bg-role-admin     { background-color: #dde3ea; } /* gris claro */
 
 /* Scrollbar personalizado */
 ::-webkit-scrollbar { width: 6px; height: 6px; }

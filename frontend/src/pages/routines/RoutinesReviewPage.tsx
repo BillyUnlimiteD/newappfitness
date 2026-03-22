@@ -75,7 +75,7 @@ export default function RoutinesReviewPage() {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div>
+    <div className="max-w-5xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-dark-900">Seguimiento de Rutinas</h1>
         <p className="text-dark-500 mt-0.5">Revisa el progreso de tus usuarios</p>

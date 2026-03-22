@@ -72,7 +72,7 @@ export default function SupervisedPage() {
   });
 
   return (
-    <div>
+    <div className="max-w-5xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-dark-900">Supervisados</h1>
         <p className="text-dark-500 mt-0.5">Seguimiento del progreso de tus supervisados</p>

@@ -117,7 +117,7 @@ export default function ExercisesPage() {
   };
 
   return (
-    <div>
+    <div className="max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-dark-900">Mantenedor de Ejercicios</h1>

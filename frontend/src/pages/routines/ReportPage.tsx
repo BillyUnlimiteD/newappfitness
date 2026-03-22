@@ -144,7 +144,7 @@ export default function ReportPage() {
   );
 
   return (
-    <div>
+    <div className="max-w-5xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-dark-900">Reporte de Progreso</h1>
         <p className="text-dark-500 mt-0.5">Exporta el avance de tus usuarios en formato Excel</p>
