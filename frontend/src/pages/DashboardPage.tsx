@@ -43,7 +43,7 @@ export default function DashboardPage() {
   const config = roleWelcome[role] || roleWelcome.USUARIO;
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-dark-900">
           ¡Hola, {user?.nombre || user?.correo}! 👋

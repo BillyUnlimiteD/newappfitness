@@ -59,7 +59,7 @@ export default function LoginLogsPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-dark-900">Logs de Intentos de Login</h1>
         <p className="text-dark-500 mt-0.5">Últimos 30 días · {data?.total ?? 0} registros</p>
