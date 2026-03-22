@@ -406,3 +406,19 @@ Parámetros opcionales: `correo`, `motivo`, `pagina`
 ### Perfil incompleto
 - Un usuario sin nombre, apellido, RUT y teléfono no puede acceder a la aplicación hasta completar su perfil
 - Solo tiene acceso a la página `/complete-profile`
+
+### Medidas implementadas (auditoría marzo 2026)
+- **Helmet:** headers de seguridad HTTP en todas las respuestas (CSP, X-Frame-Options, NOSNIFF, etc.)
+- **Rate limiting global:** 300 requests / 15 min por IP
+- **Rate limiting en login:** 20 intentos / 15 min por IP (además del bloqueo por cuenta)
+- **CORS estricto:** solo orígenes de la whitelist configurada en `FRONTEND_URL`
+- **JWT con algoritmo explícito:** HS256 forzado en firma y verificación
+- **Uploads:** extensión AND mime type deben coincidir (antes era OR); límite reducido a 50 MB; nombre de archivo generado aleatoriamente en el servidor
+- **Contraseñas:** mínimo 8 caracteres, requiere mayúscula y número
+- **Importación masiva:** límite de 500 usuarios por petición
+- **Body size:** limitado a 1 MB en JSON
+
+### Aspectos conocidos a mejorar en futuras versiones
+- **Tokens en localStorage:** los JWT se guardan en `localStorage`, vulnerable a XSS. La alternativa segura es usar `HttpOnly cookies`, lo que requiere un refactor de la autenticación.
+- **Rotación de refresh token:** el refresh token actual no se invalida tras su uso. Implementar token rotation requiere persistencia en base de datos.
+- **Paginación en listado de usuarios:** el endpoint `GET /users` retorna todos los usuarios sin límite.

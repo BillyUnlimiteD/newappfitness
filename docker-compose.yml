@@ -49,7 +49,7 @@ services:
       DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}
       DB_HOST: mysql
       NODE_ENV: production
-      FRONTEND_URL: http://192.168.1.108:80
+      FRONTEND_URL: http://192.168.1.108,http://localhost
     ports:
       - "${PORT:-3001}:3001"
     volumes:
@@ -65,6 +65,7 @@ services:
       args:
         # En Docker el frontend usa el proxy de Nginx; VITE_API_URL vacío
         VITE_API_URL: ""
+        VITE_ALLOW_REGISTRATION: ${VITE_ALLOW_REGISTRATION:-false}
     container_name: fittrack_frontend
     restart: unless-stopped
     depends_on:

@@ -46,6 +46,9 @@ pnpm-debug.log*
 coverage/
 .nyc_output/
 
+# ── Claude Code (asistente IA — no es parte de la aplicación) ────────────────
+.claude/
+
 # ── IDEs y editores ───────────────────────────────────────────────────────────
 .vscode/
 .idea/

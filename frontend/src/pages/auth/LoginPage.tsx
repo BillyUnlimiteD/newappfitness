@@ -93,12 +93,14 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-dark-500 mt-6">
-            ¿No tienes cuenta?{' '}
-            <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
-              Regístrate aquí
-            </Link>
-          </p>
+          {import.meta.env.VITE_ALLOW_REGISTRATION === 'true' && (
+            <p className="text-center text-sm text-dark-500 mt-6">
+              ¿No tienes cuenta?{' '}
+              <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
+                Regístrate aquí
+              </Link>
+            </p>
+          )}
         </div>
 
       </div>

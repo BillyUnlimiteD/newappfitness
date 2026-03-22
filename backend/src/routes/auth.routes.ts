@@ -1,14 +1,21 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { authController } from '../controllers/auth.controller';
 import { authenticate } from '../middlewares/auth.middleware';
+import { authLimiter } from '../middlewares/rate-limit.middleware';
 
 const router = Router();
 
-// POST /api/auth/login
-router.post('/login', (req, res) => authController.login(req, res));
+// Middleware: bloquea el endpoint si ALLOW_REGISTRATION != 'true'
+const registroHabilitado = (_req: Request, res: Response, next: NextFunction): void => {
+  if (process.env.ALLOW_REGISTRATION === 'true') return next();
+  res.status(403).json({ success: false, message: 'El registro público está deshabilitado.' });
+};
 
-// POST /api/auth/register
-router.post('/register', (req, res) => authController.register(req, res));
+// POST /api/auth/login  [rate limited]
+router.post('/login', authLimiter, (req, res) => authController.login(req, res));
+
+// POST /api/auth/register  [solo si ALLOW_REGISTRATION=true]
+router.post('/register', registroHabilitado, (req, res) => authController.register(req, res));
 
 // POST /api/auth/refresh
 router.post('/refresh', (req, res) => authController.refreshToken(req, res));

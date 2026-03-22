@@ -10,9 +10,12 @@ RUN npm install
 
 COPY . .
 
-# La URL del backend en producción la recibe como build arg
-ARG VITE_API_URL=http://localhost:3001
+# Variables de build — configuradas desde docker-compose / .env
+ARG VITE_API_URL=
 ENV VITE_API_URL=$VITE_API_URL
+
+ARG VITE_ALLOW_REGISTRATION=false
+ENV VITE_ALLOW_REGISTRATION=$VITE_ALLOW_REGISTRATION
 
 RUN npm run build
 

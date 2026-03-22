@@ -56,6 +56,7 @@ export class UsersController {
   async importar(req: AuthRequest, res: Response): Promise<void> {
     const { usuarios } = req.body as { usuarios: { correo: string; nombre?: string; apellido?: string; rut?: string; telefonoContacto?: string }[] };
     if (!Array.isArray(usuarios) || usuarios.length === 0) throw new Error('Se requiere un listado de usuarios');
+    if (usuarios.length > 500) throw new Error('No se pueden importar más de 500 usuarios por vez');
     const result = await usersService.importarUsuarios(usuarios);
     sendSuccess(res, result, `${result.creados.length} usuarios creados`);
   }
