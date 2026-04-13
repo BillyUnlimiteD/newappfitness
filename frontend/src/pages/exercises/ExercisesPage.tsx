@@ -4,6 +4,7 @@ import { Ejercicio, GrupoMuscular } from '../../types';
 import Modal from '../../components/common/Modal';
 import Alert from '../../components/common/Alert';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import VideoModal from '../../components/common/VideoModal';
 import { useAuth } from '../../context/AuthContext';
 
 const GRUPOS: GrupoMuscular[] = [
@@ -106,14 +107,7 @@ export default function ExercisesPage() {
 
   const getVideoPreview = (ex: Ejercicio) => {
     if (!ex.videoUrl) return null;
-    if (ex.videoUrl.startsWith('/uploads/')) {
-      return <video src={ex.videoUrl} className="w-24 h-14 object-cover rounded-lg" muted />;
-    }
-    return (
-      <a href={ex.videoUrl} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline text-xs">
-        Ver video ↗
-      </a>
-    );
+    return <VideoModal url={ex.videoUrl} title={ex.titulo} compact />;
   };
 
   return (

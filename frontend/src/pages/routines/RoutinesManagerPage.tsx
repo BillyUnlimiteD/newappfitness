@@ -115,8 +115,10 @@ export default function RoutinesManagerPage() {
 
   const getDateRange = (inicio: string, fin: string): string[] => {
     const dates: string[] = [];
-    const start = new Date(inicio);
-    const end = new Date(fin);
+    // parseISO trata los strings "YYYY-MM-DD" como medianoche local,
+    // evitando el bug de UTC que desplaza las fechas un día en zonas UTC-N
+    const start = parseISO(inicio);
+    const end = parseISO(fin);
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
       dates.push(format(new Date(d), 'yyyy-MM-dd'));
     }

@@ -27,6 +27,13 @@ enum TipoPeriodo {
   MENSUAL
 }
 
+enum TipoPeriodoCurso {
+  SEMANAL
+  MENSUAL
+  TRIMESTRAL
+  SEMESTRAL
+}
+
 enum GrupoMuscular {
   PECHO
   ESPALDA
@@ -84,6 +91,21 @@ model Usuario {
 
   // Progreso registrado
   progresos ProgresoEjercicioUsuario[]
+
+  // Cursos como COACH
+  cursosCoach Curso[] @relation("CoachCurso")
+
+  // Cursos creados/administrados
+  cursosAdmin Curso[] @relation("AdminCurso")
+
+  // Inscripciones en cursos como alumno
+  cursosAlumno CursoAlumno[] @relation("AlumnoCurso")
+
+  // Rutinas de curso como COACH
+  rutinasDeC RutinaCurso[] @relation("CoachRutinaCurso")
+
+  // Progreso en cursos
+  progresosC ProgresoEjercicioCurso[] @relation("AlumnoProgresoC")
 
   @@map("usuarios")
 }
@@ -154,6 +176,9 @@ model Ejercicio {
 
   // Uso en días de rutina
   rutinaDiaEjercicios RutinaDiaEjercicio[]
+
+  // Uso en días de rutina de curso
+  rutinaCursoDiaEjercicios RutinaCursoDiaEjercicio[]
 
   @@map("ejercicios")
 }
@@ -243,4 +268,126 @@ model ProgresoEjercicioUsuario {
 
   @@unique([rutinaDiaEjercicioId, usuarioId])
   @@map("progreso_ejercicio_usuario")
+}
+
+// ─────────────────────────────────────────
+//  CURSO
+// ─────────────────────────────────────────
+
+model Curso {
+  id            Int              @id @default(autoincrement())
+  nombre        String           @db.VarChar(200)
+  descripcion   String?          @db.Text
+  coachId       Int
+  adminId       Int
+  fechaInicio   DateTime         @db.Date
+  fechaFin      DateTime         @db.Date
+  tipoPeriodo   TipoPeriodoCurso
+  activo        Boolean          @default(true)
+  creadoEn      DateTime         @default(now())
+  actualizadoEn DateTime         @updatedAt
+
+  coach   Usuario       @relation("CoachCurso", fields: [coachId], references: [id])
+  admin   Usuario       @relation("AdminCurso", fields: [adminId], references: [id])
+  alumnos CursoAlumno[]
+  rutinas RutinaCurso[]
+
+  @@map("cursos")
+}
+
+// ─────────────────────────────────────────
+//  INSCRIPCIÓN ALUMNO EN CURSO
+// ─────────────────────────────────────────
+
+model CursoAlumno {
+  id       Int      @id @default(autoincrement())
+  cursoId  Int
+  alumnoId Int
+  creadoEn DateTime @default(now())
+
+  curso  Curso   @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  alumno Usuario @relation("AlumnoCurso", fields: [alumnoId], references: [id], onDelete: Cascade)
+
+  @@unique([cursoId, alumnoId])
+  @@map("curso_alumnos")
+}
+
+// ─────────────────────────────────────────
+//  RUTINA DE CURSO (semana)
+// ─────────────────────────────────────────
+
+model RutinaCurso {
+  id            Int      @id @default(autoincrement())
+  cursoId       Int
+  coachId       Int
+  semana        Int      // 1, 2, 3... número de semana dentro del curso
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  curso Curso            @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  coach Usuario          @relation("CoachRutinaCurso", fields: [coachId], references: [id])
+  dias  RutinaCursoDia[]
+
+  @@unique([cursoId, semana])
+  @@map("rutinas_curso")
+}
+
+// ─────────────────────────────────────────
+//  DIA DE RUTINA DE CURSO
+// ─────────────────────────────────────────
+
+model RutinaCursoDia {
+  id            Int      @id @default(autoincrement())
+  rutinaCursoId Int
+  diaSemana     Int      // 1=Lunes ... 7=Domingo
+  creadoEn      DateTime @default(now())
+
+  rutinaCurso RutinaCurso              @relation(fields: [rutinaCursoId], references: [id], onDelete: Cascade)
+  ejercicios  RutinaCursoDiaEjercicio[]
+
+  @@unique([rutinaCursoId, diaSemana])
+  @@map("rutina_curso_dias")
+}
+
+// ─────────────────────────────────────────
+//  EJERCICIO DE DIA DE RUTINA DE CURSO
+// ─────────────────────────────────────────
+
+model RutinaCursoDiaEjercicio {
+  id                Int     @id @default(autoincrement())
+  rutinaCursoDiaId  Int
+  ejercicioId       Int
+  orden             Int
+  repeticionesObj   Int?
+  tiempoObjetivoSeg Int?
+  comentarioCoach   String? @db.Text
+
+  rutinaCursoDia RutinaCursoDia          @relation(fields: [rutinaCursoDiaId], references: [id], onDelete: Cascade)
+  ejercicio      Ejercicio               @relation(fields: [ejercicioId], references: [id])
+  progresos      ProgresoEjercicioCurso[]
+
+  @@unique([rutinaCursoDiaId, orden])
+  @@map("rutina_curso_dia_ejercicios")
+}
+
+// ─────────────────────────────────────────
+//  PROGRESO EJERCICIO EN CURSO
+// ─────────────────────────────────────────
+
+model ProgresoEjercicioCurso {
+  id                        Int      @id @default(autoincrement())
+  rutinaCursoDiaEjercicioId Int
+  alumnoId                  Int
+  fecha                     DateTime @db.Date
+  repeticionesRealizadas    Int?
+  tiempoRealizadoSeg        Int?
+  completado                Boolean  @default(false)
+  creadoEn                  DateTime @default(now())
+  actualizadoEn             DateTime @updatedAt
+
+  rutinaCursoDiaEjercicio RutinaCursoDiaEjercicio @relation(fields: [rutinaCursoDiaEjercicioId], references: [id], onDelete: Cascade)
+  alumno                  Usuario                 @relation("AlumnoProgresoC", fields: [alumnoId], references: [id], onDelete: Cascade)
+
+  @@unique([rutinaCursoDiaEjercicioId, alumnoId, fecha])
+  @@map("progreso_ejercicio_curso")
 }

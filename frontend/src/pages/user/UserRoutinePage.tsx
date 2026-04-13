@@ -7,6 +7,7 @@ import { Rutina, ProgresoRutinaResponse, RutinaDiaEjercicio } from '../../types'
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import Alert from '../../components/common/Alert';
 import Modal from '../../components/common/Modal';
+import VideoModal from '../../components/common/VideoModal';
 
 interface ProgressForm {
   repeticionesRealizadas: string;
@@ -235,14 +236,10 @@ export default function UserRoutinePage() {
                               {/* Video */}
                               {rde.ejercicio.videoUrl && (
                                 <div className="mt-2">
-                                  {rde.ejercicio.videoUrl.startsWith('/uploads/') ? (
-                                    <video src={rde.ejercicio.videoUrl} controls className="w-full max-w-xs rounded-lg h-24 object-cover" />
-                                  ) : (
-                                    <a href={rde.ejercicio.videoUrl} target="_blank" rel="noopener noreferrer"
-                                      className="inline-flex items-center gap-1 text-xs text-primary-600 hover:underline font-medium">
-                                      ▶ Ver video guía
-                                    </a>
-                                  )}
+                                  <VideoModal
+                                    url={rde.ejercicio.videoUrl}
+                                    title={rde.ejercicio.titulo}
+                                  />
                                 </div>
                               )}
                             </div>

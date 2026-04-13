@@ -22,6 +22,10 @@ import RoutinesManagerPage from './pages/routines/RoutinesManagerPage';
 import RoutinesReviewPage from './pages/routines/RoutinesReviewPage';
 import UserRoutinePage from './pages/user/UserRoutinePage';
 import SupervisedPage from './pages/apoderado/SupervisedPage';
+import CoursesAdminPage from './pages/admin/CoursesAdminPage';
+import CourseManagerPage from './pages/courses/CourseManagerPage';
+import CourseReportPage from './pages/courses/CourseReportPage';
+import UserCoursePage from './pages/user/UserCoursePage';
 
 function AppRoutes() {
   const { isLoading, isAuthenticated, user } = useAuth();
@@ -107,6 +111,32 @@ function AppRoutes() {
         <Route path="/supervised" element={
           <ProtectedRoute allowedRoles={['APODERADO']}>
             <SupervisedPage />
+          </ProtectedRoute>
+        } />
+
+        {/* Cursos - Admin */}
+        <Route path="/admin/courses" element={
+          <ProtectedRoute allowedRoles={['ADMINISTRADOR']}>
+            <CoursesAdminPage />
+          </ProtectedRoute>
+        } />
+
+        {/* Cursos - Coach */}
+        <Route path="/courses/manage" element={
+          <ProtectedRoute allowedRoles={['COACH']}>
+            <CourseManagerPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/courses/report" element={
+          <ProtectedRoute allowedRoles={['COACH', 'ADMINISTRADOR']}>
+            <CourseReportPage />
+          </ProtectedRoute>
+        } />
+
+        {/* Cursos - Usuario */}
+        <Route path="/my-courses" element={
+          <ProtectedRoute allowedRoles={['USUARIO']}>
+            <UserCoursePage />
           </ProtectedRoute>
         } />
       </Route>

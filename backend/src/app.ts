@@ -17,9 +17,15 @@ import exercisesRoutes from './routes/exercises.routes';
 import routinesRoutes from './routes/routines.routes';
 import progressRoutes from './routes/progress.routes';
 import loginLogsRoutes from './routes/login-logs.routes';
+import coursesRoutes from './routes/courses.routes';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Nginx actúa como proxy inverso en Docker; confiar en 1 nivel de proxy
+// permite que express-rate-limit lea correctamente la IP real del cliente
+// desde el header X-Forwarded-For que agrega Nginx.
+app.set('trust proxy', 1);
 
 // ── Seguridad: headers HTTP seguros ─────────────────────────────────────────
 app.use(helmet());
@@ -61,6 +67,7 @@ app.use('/api/exercises', exercisesRoutes);
 app.use('/api/routines', routinesRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/admin/login-logs', loginLogsRoutes);
+app.use('/api/courses', coursesRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
