@@ -19,6 +19,10 @@ Aplicación web full-stack para la gestión de rutinas de entrenamiento físico.
 
 ---
 
+> **Último módulo agregado:** [Cursos](#cursos-courses) — permite al administrador crear cursos multi-semana, al coach gestionar semanas/días con ejercicios, al usuario registrar su progreso, y genera reportes por curso y por alumno.
+
+---
+
 ## Stack tecnológico
 
 ### Frontend
@@ -104,18 +108,23 @@ Cliente (navegador)
 - Asignación de apoderados a usuarios supervisados
 - Gestión de ejercicios (crear, editar, activar/desactivar)
 - **Log de intentos de login fallidos** (últimos 30 días): correo, IP, motivo, fecha
+- **Gestión de cursos:** crear/editar/eliminar cursos, asignar coach y alumnos
+- **Reportes de cursos:** ver progreso de todos los alumnos por curso o por alumno individual
 
 ### Coach
 - Creación y gestión de rutinas semanales/mensuales para sus alumnos
 - Asignación de ejercicios por día con repeticiones u objetivos de tiempo
 - Seguimiento del progreso de cada alumno
 - Calificación de rutinas (nota 1.0 – 7.0)
-- Reportes de avance
+- **Reportes de avance de rutinas**
+- **Gestión de cursos asignados:** crear semanas, agregar días con ejercicios, duplicar semanas
+- **Reportes de cursos:** ver progreso general del curso y detalle por alumno
 
 ### Usuario
 - Visualización de su rutina activa
 - Registro de progreso por ejercicio (repeticiones realizadas / tiempo)
 - Historial de avance
+- **Visualización de sus cursos activos** y registro de progreso por ejercicio del curso
 
 ### Apoderado
 - Visualización del progreso de sus supervisados
@@ -157,15 +166,16 @@ NewAPPFitness/
         │   └── AuthContext.tsx # Estado global de autenticación
         ├── pages/
         │   ├── auth/           # Login, registro, cambio de clave, completar perfil
-        │   ├── admin/          # Usuarios, importación, logs de acceso
+        │   ├── admin/          # Usuarios, importación, logs de acceso, gestión de cursos
         │   ├── exercises/      # Gestión de ejercicios
         │   ├── routines/       # Rutinas (manager, seguimiento, reporte)
-        │   ├── user/           # Rutina del usuario
+        │   ├── courses/        # Cursos (manager del coach, reporte por curso/alumno)
+        │   ├── user/           # Rutina del usuario + vista de cursos
         │   ├── apoderado/      # Supervisados
         │   └── profile/        # Perfil propio
         ├── components/
         │   ├── layout/         # Layout, Sidebar, ProtectedRoute
-        │   └── common/         # Modal, Alert, LoadingSpinner, RoleBadge
+        │   └── common/         # Modal, Alert, LoadingSpinner, RoleBadge, VideoModal
         ├── services/           # Clientes HTTP (api.ts + servicios por dominio)
         └── types/              # Interfaces TypeScript
 ```
@@ -366,6 +376,31 @@ Base URL: `http://IP_SERVIDOR/api`
 | GET | `/progress/:rutinaId` | Progreso de una rutina | Autenticado |
 | POST | `/progress` | Registrar progreso | USUARIO |
 
+### Cursos (`/courses`)
+
+| Método | Endpoint | Descripción | Rol requerido |
+|--------|----------|-------------|---------------|
+| GET | `/courses` | Listar cursos propios | Autenticado |
+| POST | `/courses` | Crear curso | ADMINISTRADOR |
+| GET | `/courses/:id` | Obtener curso con semanas y días | Autenticado |
+| PUT | `/courses/:id` | Actualizar curso | ADMINISTRADOR |
+| DELETE | `/courses/:id` | Eliminar curso | ADMINISTRADOR |
+| POST | `/courses/:id/students` | Agregar alumnos al curso | ADMINISTRADOR |
+| DELETE | `/courses/:id/students/:alumnoId` | Quitar alumno del curso | ADMINISTRADOR |
+| POST | `/courses/:id/weeks` | Crear semana en el curso | COACH, ADMINISTRADOR |
+| DELETE | `/courses/:id/weeks/:semanaId` | Eliminar semana | COACH, ADMINISTRADOR |
+| POST | `/courses/:id/weeks/:semanaId/duplicate` | Duplicar semana | COACH, ADMINISTRADOR |
+| POST | `/courses/:id/weeks/:semanaId/days` | Agregar día con ejercicios | COACH, ADMINISTRADOR |
+| PUT | `/courses/:id/weeks/:semanaId/days/:diaId` | Actualizar día | COACH, ADMINISTRADOR |
+| GET | `/courses/:id/my-progress` | Progreso del usuario en el curso | USUARIO |
+| POST | `/courses/:id/progress` | Registrar progreso en ejercicio | USUARIO |
+| GET | `/courses/:id/report` | Reporte general del curso | ADMINISTRADOR, COACH |
+| GET | `/courses/:id/report/:alumnoId` | Reporte de un alumno en el curso | ADMINISTRADOR, COACH |
+
+**Tipos de período del curso:** `SEMANAL` / `MENSUAL` / `TRIMESTRAL` / `SEMESTRAL`
+
+Las semanas se calculan por número de semana ISO + día de semana (1 = lunes, 7 = domingo).
+
 ### Logs de acceso (`/admin/login-logs`)
 
 | Método | Endpoint | Descripción | Rol requerido |
@@ -406,6 +441,13 @@ Parámetros opcionales: `correo`, `motivo`, `pagina`
 ### Perfil incompleto
 - Un usuario sin nombre, apellido, RUT y teléfono no puede acceder a la aplicación hasta completar su perfil
 - Solo tiene acceso a la página `/complete-profile`
+
+### Rate limiting detrás de Nginx
+- Express tiene configurado `trust proxy` para que `express-rate-limit` use la IP real del cliente (header `X-Forwarded-For`) y no la IP interna de Docker
+
+### Videos de ejercicios
+- Los videos se reproducen en un popup (`VideoModal`) interno sin abrir una nueva pestaña
+- Soporta: videos locales (`/uploads/...`), YouTube (embed) y Vimeo
 
 ### Medidas implementadas (auditoría marzo 2026)
 - **Helmet:** headers de seguridad HTTP en todas las respuestas (CSP, X-Frame-Options, NOSNIFF, etc.)
